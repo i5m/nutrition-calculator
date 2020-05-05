@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0">
+    <meta content="Whip up a custom nutrition label and start making healthier choices" name="description">
+    <title>Recipe Nutrition Calculator</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/loader.css') }}">
+    <style>
+        .navbar { padding-left: 20px; z-index: 999; }
+        #logo-img { height: 37px; }
+        .container { max-width: 786px; margin: 0 auto; }
+        #bg-box {
+            margin: 50px auto 10px auto;
+        }
+        #bg-box img {
+            width: 100%;
+            max-width: 100vw;
+            -webkit-transform: scaleX(-1);
+            transform: scaleX(-1);
+        }
+        #bg-box div div { top: 30%; left: 15px; }
+        #steps-box { margin-bottom: 30px; }
+        #steps-box img { width: 70px; }
+        #steps-box h5 { vertical-align: 150%; }
+        #form-box div.inline-box { min-width: 40%; }
+        #ing-box input[type="number"] { width: 10%; }
+        #ing-box input[type="text"] { width: 63%; }
+        .ing-sug-box { max-height: 160px; overflow-y: auto; }
+        @media only screen and (max-width: 700px) {
+            #bg-box { margin-bottom: 100px; }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar main-bg pos-fixed p-4 tac">
+    <img src="{{ url_for('static', filename='img/logo.png') }}" id="logo-img">
+</nav>
+
+<div id="bg-box" class="row pos-relative p-12 tal">
+    <img class="br-10" src="{{ url_for('static', filename='img/bg.webp') }}">
+    <div class="pos-relative">
+        <div class="pos-absolute m-8">
+            <span class="h6 p-4 pr-8 pl-8 bold-text warning-bg warning-color br-round">RECIPES</span>
+            <h3 class="bold-text m-4">Try Our Recipe <br/> Nutrition Calculator</h3>
+        </div>
+    </div>
+</div>
+
+<div class="container p-4">
+    <div id="form-box" class="p-8">
+        <div id="steps-box" class="row tac">
+            <div>
+                <img src="{{ url_for('static', filename='img/steps/step1.png') }}">
+                <h6>Enter Your Ingredients</h6>
+            </div>
+            <div>
+                <img src="{{ url_for('static', filename='img/steps/step2.png') }}">
+                <h6>Click on 'Analyze Recipe'</h6>
+            </div>
+            <div>
+                <img src="{{ url_for('static', filename='img/steps/step3.png') }}">
+                <h6>Get Your Nutrition Facts Label</h6>
+            </div>
+        </div>
+        <form method="POST" id="recipe-form" class="p-8 br-10 sec-border" onsubmit="handle_form_func(); return false;">
+            <div class="m-8 p-4 pb-12">
+                <p class="bold-text">Recipe Name (optional)</p>
+                <input type="text" name="recipe-name" class="br-10 p-8" maxlength="100">
+            </div>
+            <div class="m-8 p-4 pb-12">
+                <p class="bold-text">Add ingridients for your recipe (Quantity, Name)</p>
+                <!--<p class="warning-color">The unit of quantity can be neglected</p>-->
+                <div id="ing-box"><div class="p-4 none-box">
+                        <div class="ing-validator"></div>
+                        <input name="amount" type="number" class="br-10 p-8" min="1">
+                        <input name="ing-name" placeholder="Start typing..." class="p-8 br-10 ing-name-input" type="text" maxlength="100" onkeyup="match_ing_func(this);" onkeydown="clearTimeout(typingTimer);" onfocusout="ing_name_out(this)">
+                        <button type="button" onclick="remove_ing_func(this)" class="p-4 pr-8 pl-8 ml-8 sec-bg sec-color bold-text br-round">&#10005</button>
+                        <div class="none-box ing-sug-box success-border sec-color p-4 br-10"></div>
+                    </div>
+                    <div class="p-4">
+                        <div class="ing-validator"></div>
+                        <input name="amount" type="number" class="br-10 p-8" required min="1">
+                        <input name="ing-name" placeholder="Start typing..." class="p-8 br-10 ing-name-input" type="text" required maxlength="100" onkeyup="match_ing_func(this);" onkeydown="clearTimeout(typingTimer);" onfocusout="ing_name_out(this)">
+                        <button type="button" onclick="remove_ing_func(this)" class="none-box p-4 pr-8 pl-8 ml-8 sec-bg sec-color bold-text br-round">&#10005</button>
+                        <div class="none-box ing-sug-box success-border sec-color p-4 br-10"></div>
+                    </div>
+                </div>
+                <button type="button" onclick="add_ing_func()" class="p-8 pr-12 pl-12 br-10 m-8 success-bg success-color bold-text h6"> + Add Ingridient</button>
+            </div>
+            <div class="m-8 p-4 pb-12 inline-box">
+                <p class="bold-text">Select Number of Servings</p>
+                <select class="p-8 br-10 main-bg" required name="serving" id="serving"></select>
+            </div>
+            <div class="m-8 p-4 pb-12 inline-box">
+                <p class="bold-text">Enter serving size (optional)</p>
+                <input type="text" name="size_" maxlength="100" class="p-8 br-10">
+            </div>
+            <button type="submit" class="p-8 pr-12 pl-12 m-8 br-10 success-color-bg main-bg-color bold-text h5">ANALYZE RECIPE</button>
+        </form>    
+    </div>
+    <div id="loader-box" class="tac none-box">
+        <div class="lds-ripple"><div></div><div></div></div>
+    </div>
+    <div id="output-box" class="p-8 none-box">
+        <h5 class="success-color m-4">Recipe Analyzer Results</h5>
+        <h4 class="bold-text">A single serving of <span id="cal-per-serv-text"></span> calories.</h4>
+        <button type="button" onclick="clear_recipe_func()" class="p-8 pr-12 pl-12 m-12 main-color-bg main-bg-color br-10 bold-text h5">CLEAR RECIPE</button>
+        <div id="results-box" class="p-4"></div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+</body>
+
+</html>
